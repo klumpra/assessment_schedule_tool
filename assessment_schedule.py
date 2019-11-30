@@ -255,6 +255,7 @@ while i < prog_wks.nrows:
 ''' write the results as an html file. fout corresponds to output_fname '''
 write_output_html(fout,results)
 
-''' this code was used initially to produce assessment_schedule.xls '''
+''' this code was used initially to produce assessment_schedule.xls. It probably
+never needs to be run again.'''
 if INITIAL_PRODUCTION:
     workbook.save(excel_out_name)
