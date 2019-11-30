@@ -16,7 +16,8 @@ INITIAL_PRODUCTION is set to True. When INITIAL_PRODUCTION is True, This
 program produce a file called assessment_schedule.xls by combining data
 from contacts.xlsx and slos.xlsx and adding columns for years 2019-2024. The
 resulting file looks like this:
-    Contact Name    Contact Email    Student Learning Outcome    2019-2020   2020-2021   2021-2022    2022-2023    2023-2024
+    Contact Name    Contact Email    Student Learning Outcome    2019-2020   
+    2020-2021   2021-2022    2022-2023    2023-2024
 You then copy this assessment_schedule.xls to schedule.xls so that you can
 format it nicely and share it with CoAST Chairs to put X's in the years when
 particular outcomes will be measured. Perhaps post schedule.xls to Google 
@@ -64,8 +65,11 @@ INITIAL_PRODUCTION = False
 This function takes in the already open file and a list of fully formatted
 tr's. Each tr contains td's that specify program contact name, contact email,
 outcome, and entries for years 2019-2020 through 2023-2024.
+
+20191130: added no_slo_programs list parameter to identify programs that
+are missing SLOs in TK20.
 '''
-def write_output_html(fout,table_content):
+def write_output_html(fout,table_content,no_slo_programs):
     fout.write("<html>")
     fout.write("<head>")
     fout.write("<title>2019-2020 Assessment Progress</title>")
@@ -82,6 +86,13 @@ def write_output_html(fout,table_content):
     for row in table_content:
         fout.write("%s\n" % row)
     fout.write("</table>")
+    fout.write("<br/><br/>")
+    fout.write('<p class="subtitle"><b>The following programs have no SLOs defined:</b></p>')
+    fout.write("<ul>")
+    for nsp in no_slo_programs:
+        fout.write("<li>%s</li>" % nsp)
+    fout.write("</ul>")
+    fout.write("<br/><br/>")
     fout.write("</body>")
     fout.write("<html>")
     fout.close()
@@ -120,7 +131,7 @@ fout = open(output_fname,"w")
 # reports.
 prog_wbk = xlrd.open_workbook(program_fname, on_demand = True)
 
-# cont_wbk is the data provided by chairs on who is responsibile for each
+# cont_wbk is the data provided by chairs on who is responsibil for each
 # program's assessment. They completed this activity online, and I downloaded
 # it as an Excel spreadsheet.
 cont_wbk = xlrd.open_workbook(contact_fname, on_demand = True)
@@ -178,12 +189,18 @@ i = 10
 results = []
 prog_num = 0
 row_count = 0
+'''tk20_list_of_programs hold the list of programs that were reported in the
+tk20 report #001. I am keeping a list of them so that I can compare with the
+keys in the contacts list to see if there are any programs that don't have
+SLOs defined'''
+tk20_list_of_programs = []
 while i < prog_wks.nrows:
     row_count = row_count + 1
     prog_name = prog_wks.cell_value(i,0).strip() 
     ''' helps us determine the
                         corresponding contact from the contacts dictionary,
                         as the key for contacts is the program name '''
+    tk20_list_of_programs.append(prog_name)
     prog_num = prog_num+1   
     ''' prog_num is used to keep track of whether to 
                         gray-scale a sequence of rows or not. This helps set 
@@ -252,8 +269,17 @@ while i < prog_wks.nrows:
     ''' skip to the next program '''
     while (i < prog_wks.nrows and prog_wks.cell_value(i,0).strip() == ""):
         i = i + 1
+
+'''determine those programs that don't have SLOs listed yet. These are ones
+for which a contact has been defined but for which no SLOs appear in TK20'''        
+no_slo_programs = []
+for key in contacts:
+    if key not in tk20_list_of_programs:
+        no_slo_programs.append(key)
+
 ''' write the results as an html file. fout corresponds to output_fname '''
-write_output_html(fout,results)
+write_output_html(fout,results,no_slo_programs)
+
 
 ''' this code was used initially to produce assessment_schedule.xls. It probably
 never needs to be run again.'''
