@@ -5,7 +5,7 @@ result of a completed assessment or schedule of upcoming ones for the
 years 2019 through 2024. 
 
 The inputs to this are 
-(1) slos.xlsx, which is the export of Report #001 from TK20. 
+(1) slos.xlsx, which is the export of Report #003 from TK20. 
 (2) contacts.xlsx, which is the xls version of the google spreadsheet chairs
 filled out to name contacts from the various programs in coast. This had been
 hosted on Google Drive as sheet assessment_contacts. It has fields
@@ -100,7 +100,7 @@ def write_output_html(fout,table_content,no_slo_programs):
 # The folder in which all the input and output files are located.
 FOLDER = "C:\\Users\\klumpra\\Dropbox\\coast\\ray_stuff\\assessment\\"
 
-# The output xlsx from TK20's Report #001
+# The output xlsx from TK20's Report #003
 program_fname =  FOLDER + "slos.xlsx"
 
 # The Excel download of the assessment_contacts google sheet the chairs did
@@ -190,7 +190,7 @@ results = []
 prog_num = 0
 row_count = 0
 '''tk20_list_of_programs hold the list of programs that were reported in the
-tk20 report #001. I am keeping a list of them so that I can compare with the
+tk20 report #003. I am keeping a list of them so that I can compare with the
 keys in the contacts list to see if there are any programs that don't have
 SLOs defined'''
 tk20_list_of_programs = []
@@ -285,3 +285,13 @@ write_output_html(fout,results,no_slo_programs)
 never needs to be run again.'''
 if INITIAL_PRODUCTION:
     workbook.save(excel_out_name)
+    workbook.release_resources()
+    del workbook
+
+prog_wbk.release_resources()
+schd_wbk.release_resources()
+cont_wbk.release_resources()
+del prog_wbk
+del schd_wbk
+del cont_wbk
+
