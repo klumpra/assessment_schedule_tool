@@ -8,6 +8,11 @@ program and to each outcome listed in the 001 report.
 Note: do not use main.css. Just use the bootstrap css. Otherwise, the anchors
 aren't handled properly - the page doesn't scroll to the anchor because the
 main.css has too many floating elements that end up screwing up the scrolling.
+
+A future version of the program will need to look at multiple 001 files, one
+for each year. It should merge them together. Likewise, assessment_schedule.py
+will have to read multiple 003 files, one for each year, as well as a combined
+001 file that spans multiple years.
 '''
 
 '''
