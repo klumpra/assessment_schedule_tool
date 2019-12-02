@@ -51,6 +51,23 @@ import xlrd
 import xlwt
 import datetime
 
+'''
+this function is used to turn slos into valid html anchors by removing 
+punctuation and replacing spaces with hyphens. This is identical to
+link_001_report.py's replace_punctuation function, except this one also 
+replaces spaces with hyphens.
+'''
+def replace_punctuation_and_hyphenate(text):
+    text = text.replace(" ","-")
+    result = ""
+    for ch in text:
+        code = ord(ch)
+        if (code >=48 and code<58) or (code >= 65 and code <=90) or (code >=97 and code <= 122):
+            result = result + ch
+        elif ch == "-":
+            result = result + ch
+    return result
+
 INITIAL_PRODUCTION = False  
 ''' set this to True to create assessment_schedule.xls
                                 using this program. Really, once this is done,
@@ -75,6 +92,7 @@ def write_output_html(fout,table_content,no_slo_programs):
     fout.write("<title>2019-2020 Assessment Progress</title>")
     fout.write("<style>.centered {text-align:center;} .title {font-size:36px;} .subtitle {font-size:18px;} th {background-color:DDDDDD; border: solid 1px; padding: 3px 3px 3px 3px;}")
     fout.write("td {vertical-align:top; border: solid 1px; padding-left: 3px;}")
+    fout.write("a:link, a:visited {color: inherit; text-decoration:none;}")
     fout.write("</style>")
     fout.write("</head>")
     fout.write('<body style="font-family:Arial;">')
@@ -196,7 +214,7 @@ SLOs defined'''
 tk20_list_of_programs = []
 while i < prog_wks.nrows:
     row_count = row_count + 1
-    prog_name = prog_wks.cell_value(i,0).strip() 
+    prog_name = prog_wks.cell_value(i,0).strip().replace("  "," ") 
     ''' helps us determine the
                         corresponding contact from the contacts dictionary,
                         as the key for contacts is the program name '''
@@ -215,7 +233,7 @@ while i < prog_wks.nrows:
     contact_name = contacts[prog_name][0]
     contact_email = contacts[prog_name][1]
     i = i + 2  # skip over the program header to where the first SLO is
-    outcome = prog_wks.cell_value(i,1).strip()
+    outcome = prog_wks.cell_value(i,1).strip().replace("  "," ")
     while (outcome != ""):   
         ''' while the row contains an SLO and isn't the
                        the beginning of blank space that separates programs'''
@@ -245,11 +263,19 @@ while i < prog_wks.nrows:
         f2021 = schedule["%s_%s" % (prog_name,outcome)][2]
         f2022 = schedule["%s_%s" % (prog_name,outcome)][3]
         f2023 = schedule["%s_%s" % (prog_name,outcome)][4]
+        ''' html_link is the prog_name-outcome with punctuation replaced in 
+        outcome and spaces replaced by hyphens. These locate places in 
+        report_with_links.html, which is the exported TK20 report #001 with
+        links added for programs and slo's. Those links were added by the
+        program link_001_report.py. The name of the report_with_links.html
+        file may have to be distinguished by year in the future.'''
+        program_html_link = ("./report_with_links.html#%s" % prog_name.replace(" ","-")).strip()
+        slo_html_link = ("./report_with_links.html#%s-%s" % (prog_name.replace(" ","-"),replace_punctuation_and_hyphenate(outcome))).strip()
         ''' construct a full table row with all the necessary columns, 
         including program name, contact name, contact email, SLO, and the
         year-by-year results or X's that indicate that the SLO is scheduled
         for that year. '''
-        results.append("<tr>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</tr>" % (td,prog_name,td,contact_name,td,contact_email,td,outcome,tdc,finding,tdc,f2020,tdc,f2021,tdc,f2022,tdc,f2023))
+        results.append('<tr>%s<a href="%s" target="_blank">%s</a></td>%s%s</td>%s%s</td>%s<a href="%s">%s</a></td>%s%s</td>%s%s</td>%s%s</td>%s%s</td>%s%s</tr>' % (td,program_html_link,prog_name,td,contact_name,td,contact_email,td,slo_html_link,outcome,tdc,finding,tdc,f2020,tdc,f2021,tdc,f2022,tdc,f2023))
         ''' this code was the one-time-only step needed to produce
         assessment_schedule.xls. From this, we'll eventually produce
         schedule.xlsx, which is the same data but more nicely formatted '''
